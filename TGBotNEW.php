@@ -1,5 +1,5 @@
 <?php
-class TGBot{
+class TGBot {
     private $token, $ctoken, $fparam;
     function __construct($input, $ctoken, $fparam, $token){
         $this->curl = curl_init();
@@ -24,7 +24,7 @@ class TGBot{
                 $this->document = $this->update['message']['document'];
                 $this->photo = $this->update['message']['photo'];
                 $this->video = $this->update['message']['video'];
-                if($this->type == 'supergroup' or $this->type == 'group' or $this->type == 'channel'){
+                if(in_array($this->type, ['channel', 'group', 'supergroup']){
                     $this->title = $this->update['message']['chat']['title'];
                     if($this->type == 'group'){
                         $this->all_members_are_administrators = $this->update['message']['chat']['all_members_are_administrators'];
@@ -97,8 +97,8 @@ class TGBot{
                     $this->language_code = $this->update['edited_message']['from']['language_code'];
                     $this->chat_id = $this->update['edited_message']['chat']['id'];
                     $this->type = $this->update['edited_message']['chat']['type'];
-                    $this->author = $this->update['edited_message']['author_signature']; //e pensare che volevi subito la risposta
-                    if($this->type == 'supergroup' or $this->type == 'group'){
+                    $this->author = $this->update['edited_message']['author_signature'];
+                    if(in_array($this->type, ['group', 'supergroup'])){
                         $this->title = htmlspecialchars($this->update['edited_message']['chat']['title']);
                         if($this->type == 'group'){
                             $this->all_members_are_administrators = $this->update['edited_message']['chat']['all_members_are_administrators'];
@@ -158,7 +158,7 @@ class TGBot{
                     $this->is_bot = $this->update['callback_query']['from']['is_bot'];
                     $this->language_code = $this->update['callback_query']['from']['language_code'];
                     $this->type = $this->update['callback_query']['message']['chat']['type'];
-                    if($this->type == 'supergroup' or $this->type == 'group'){
+                    if(in_array($this->type, ['group', 'supergroup'])){
                         $this->title = $this->update['callback_query']['message']['chat']['title'];
                     }
                     $this->cbid = $this->update['callback_query']['id'];
@@ -187,6 +187,7 @@ class TGBot{
         $this->settings = $settings;
         $this->table_name = $this->settings['table_name'];
     }
+                   
     public function botAdmin($userID = NULL){
         if($userID == NULL){
             $userID = $this->user_id;
@@ -216,8 +217,7 @@ class TGBot{
                 $this->mdb = new PDO("mysql:host=".$host.";dbname=".$dbname, $username, $password); 
                 echo 'Database MySQL: OK <br />';
             }catch(PDOException $e){
-            die("Database MySQL: Connection problem. 
-               Error: <b>".$e->getMessage()."</b></br >");
+            die("Database MySQL: Connection problem. <br /> <b>".$e->getMessage());
             }
         }
     }    
@@ -229,15 +229,12 @@ class TGBot{
         ]);
         return curl_exec($this->curl);
     }
+                   
     public function getBotInfo($info){
         $get = json_decode(self::Request('/getme'), true);
-        if($info == 'username'){
-            return $get['result']['username'];
-        }elseif($info == 'name'){
-return $get['result']['first_name'];
-        }elseif($info == 'id'){
-            return $get['result']['id'];
-        }
+        if($info == 'username') return $get['result']['username'];
+        if($info == 'name') return $get['result']['first_name'];
+        if($info == 'id') return $get['result']['id'];
     }
     public function sendMessage($chat_id, $text, $reply_markup = false, $button_type = 'inline', $reply_to_message_id = NULL, $parse_mode = NULL, $disable_web_page_preview = NULL){
         if($parse_mode == NULL){
@@ -259,7 +256,7 @@ return $get['result']['first_name'];
                 $args['reply_markup'] = $reply_markup;
             }
         }
-            return json_decode(self::Request('/sendMessage', $args), true);
+        return json_decode(self::Request('/sendMessage', $args), true);
     }
     public function answerCallbackQuery($cbid, $text, $showalert = false, $url = NULL, $cache_time = NUll){
         $args = [
